@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>パフォーマンススライダー</title>
+    <style>
+        body {
+            font-size: 24px;
+        }
+        .slider-container {
+            margin: 30px 0;
+        }
+        .slider-label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .slider {
+            width: 100%;
+            height: 15px;
+        }
+        .slider-container:nth-child(1) .slider-label {
+            color: rgb(200, 50, 100); /* 暗めのピンク */
+        }
+        .slider-container:nth-child(2) .slider-label {
+            color: blue;
+        }
+        .slider-container:nth-child(3) .slider-label {
+            color: rgb(200, 200, 50); /* 暗めの黄色 */
+        }
+    </style>
+</head>
+<body>
+    <label>最大値: 
+        <select id="maxValue" style="font-size: 24px;">
+            <option value="2000">2500</option>
+            <option value="25000">25000</option>
+            <option value="60000">80000</option>
+        </select>
+    </label>
+    <div id="sliders"></div>
+    <script>
+        const data = [
+            { name: "ボーカル", value: 500 },
+            { name: "ダンス", value: 800 },
+            { name: "ビジュアル", value: 1200 }
+        ];
+        let maxValue = 2000;
+
+        function renderSliders() {
+            const slidersContainer = document.getElementById("sliders");
+            slidersContainer.innerHTML = "";
+
+            data.forEach((item, index) => {
+                const container = document.createElement("div");
+                container.className = "slider-container";
+                
+                const label = document.createElement("span");
+                label.className = "slider-label";
+                label.innerText = `${item.name}: ${item.value}`;
+                
+                const slider = document.createElement("input");
+                slider.type = "range";
+                slider.className = "slider";
+                slider.min = 0;
+                slider.max = maxValue;
+                slider.value = item.value;
+                slider.oninput = (e) => {
+                    item.value = Number(e.target.value);
+                    label.innerText = `${item.name}: ${item.value}`;
+                };
+                
+                container.appendChild(label);
+                container.appendChild(slider);
+                slidersContainer.appendChild(container);
+            });
+        }
+
+        document.getElementById("maxValue").onchange = (e) => {
+            maxValue = Number(e.target.value);
+            renderSliders();
+        };
+
+        renderSliders();
+    </script>
+</body>
+</html>
