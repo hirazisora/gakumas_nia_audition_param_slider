@@ -10,6 +10,7 @@
         }
         .slider-container {
             margin: 30px 0;
+            position: relative;
         }
         .slider-label {
             display: block;
@@ -18,33 +19,83 @@
         }
         .slider {
             width: 100%;
-            height: 15px;
+            height: 20px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            position: relative;
+            z-index: 3;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            background: #555;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .slider::-moz-range-thumb {
+            width: 40px;
+            height: 40px;
+            background: #555;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .progress-bar {
+            position: absolute;
+            height: 20px;
+            border-radius: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+        }
+        .slider-track {
+            position: absolute;
+            width: 100%;
+            height: 20px;
+            background: #ddd;
+            border-radius: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+        .ticks {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            margin-top: 5px;
         }
         .slider-container:nth-child(1) .slider-label {
-            color: rgb(200, 50, 100); /* 暗めのピンク */
+            color: rgb(200, 50, 100);
         }
         .slider-container:nth-child(2) .slider-label {
             color: blue;
         }
         .slider-container:nth-child(3) .slider-label {
-            color: rgb(200, 200, 50); /* 暗めの黄色 */
+            color: rgb(200, 200, 50);
+        .info-box {
+            margin-top: 10px;
+            font-size: 20px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <label>最大値: 
+    <label>目標値: 
         <select id="maxValue" style="font-size: 24px;">
-            <option value="2000">2500</option>
-            <option value="25000">25000</option>
-            <option value="60000">80000</option>
+            <option value="2000">一次</option>
+            <option value="25000">二次</option>
+            <option value="60000">最終</option>
         </select>
     </label>
+    <div id="infoBox" class="info-box"></div>
     <div id="sliders"></div>
     <script>
         const data = [
-            { name: "ボーカル", value: 500 },
-            { name: "ダンス", value: 800 },
-            { name: "ビジュアル", value: 1200 }
+            { name: "ボーカル", value: 0, color: "rgb(200, 50, 100)" },
+            { name: "ダンス", value: 0, color: "blue" },
+            { name: "ビジュアル", value: 0, color: "rgb(200, 200, 50)" }
         ];
         let maxValue = 2000;
 
@@ -60,28 +111,61 @@
                 label.className = "slider-label";
                 label.innerText = `${item.name}: ${item.value}`;
                 
+                const track = document.createElement("div");
+                track.className = "slider-track";
+                
+                const progressBar = document.createElement("div");
+                progressBar.className = "progress-bar";
+                progressBar.style.background = item.color;
+                progressBar.style.width = `${(item.value / maxValue) * 100}%`;
+                
                 const slider = document.createElement("input");
                 slider.type = "range";
                 slider.className = "slider";
                 slider.min = 0;
                 slider.max = maxValue;
+                slider.step = 100;
                 slider.value = item.value;
                 slider.oninput = (e) => {
                     item.value = Number(e.target.value);
                     label.innerText = `${item.name}: ${item.value}`;
+                    progressBar.style.width = `${(item.value / maxValue) * 100}%`;
                 };
                 
+                const ticks = document.createElement("div");
+                ticks.className = "ticks";
+                for (let i = 0; i <= maxValue; i += Math.max(1000, maxValue / 5)) {
+                    const tick = document.createElement("span");
+                    tick.innerText = new Intl.NumberFormat('ja-JP').format(i);
+                    ticks.appendChild(tick);
+                }
+                
                 container.appendChild(label);
+                container.appendChild(track);
+                container.appendChild(progressBar);
                 container.appendChild(slider);
+                container.appendChild(ticks);
                 slidersContainer.appendChild(container);
             });
         }
 
+        const infoData = {
+            2000: "得意：2,550\n普通：2,050\n苦手：1,600\nファン数：10,700",
+            25000: "得意：25,300\n普通：20,400\n苦手：16,400\nファン数：256,000",
+            60000: "得意：80,000\n普通：65,000\n苦手：55,000\nファン数：800,000"
+        };
+
+        function updateInfoBox(value) {
+            document.getElementById("infoBox").innerText = infoData[value];
+        };
+
         document.getElementById("maxValue").onchange = (e) => {
             maxValue = Number(e.target.value);
+            updateInfoBox(maxValue);
             renderSliders();
         };
 
+        updateInfoBox(2000);
         renderSliders();
     </script>
 </body>
