@@ -9,8 +9,9 @@
             font-size: 24px;
         }
         .slider-container {
-            margin: 30px 0;
-            position: relative;
+            margin-top: 20px;
+            margin-bottom: 40px;
+            position: relative;            
         }
         .slider-label {
             display: block;
@@ -46,7 +47,7 @@
             position: absolute;
             height: 20px;
             border-radius: 10px;
-            top: 50%;
+            top: 75%;
             transform: translateY(-50%);
             z-index: 2;
         }
@@ -56,15 +57,25 @@
             height: 20px;
             background: #ddd;
             border-radius: 10px;
-            top: 50%;
+            top: 75%;
             transform: translateY(-50%);
             z-index: 1;
+        }
+        .ticks-container {
+            position: absolute;
+            width: 100%;
+            height: 20px;
+            top: 80%;
+            z-index: 3;
         }
         .ticks {
             display: flex;
             justify-content: space-between;
             font-size: 18px;
-            margin-top: 5px;
+            margin-top: 0;
+        }
+        .ticks pre{
+            margin: 0;
         }
         .slider-container:nth-child(1) .slider-label {
             color: rgb(200, 50, 100);
@@ -85,8 +96,8 @@
     <label>目標値: 
         <select id="maxValue" style="font-size: 24px;">
             <option value="2600">一次</option>
-            <option value="25300">二次</option>
-            <option value="60000">最終</option>
+            <option value="26000">二次</option>
+            <option value="80000">最終</option>
         </select>
     </label>
     <div id="infoBox" class="info-box"></div>
@@ -97,7 +108,7 @@
             { name: "ダンス", value: 0, color: "blue" },
             { name: "ビジュアル", value: 0, color: "rgb(200, 200, 50)" }
         ];
-        let maxValue = 2000;
+        let maxValue = 2600;
 
         function renderSliders() {
             const slidersContainer = document.getElementById("sliders");
@@ -119,12 +130,25 @@
                 progressBar.style.background = item.color;
                 progressBar.style.width = 0;
                 
+                let roundDigit;
+                switch(maxValue){
+                  case 2600:
+                    roundDigit = 50;
+                    break;
+                  case 26000:
+                    roundDigit = 500;
+                    break;
+                  case 80000:
+                    roundDigit = 1000;
+                    break;
+                }
+                
                 const slider = document.createElement("input");
                 slider.type = "range";
                 slider.className = "slider";
                 slider.min = 0;
-                slider.max = maxValue;
-                slider.step = 100;
+                slider.max = maxValue + 1;
+                slider.step = roundDigit;
                 slider.value = 0;
                 slider.oninput = (e) => {
                     item.value = Number(e.target.value);
@@ -132,27 +156,47 @@
                     progressBar.style.width = `${(item.value / maxValue) * 100}%`;
                 };
                 
+                const ticksContainer = document.createElement("div");
+                ticksContainer.className = "ticks-container";
                 const ticks = document.createElement("div");
                 ticks.className = "ticks";
-                for (let i = 0; i <= maxValue; i += Math.max(1000, maxValue / 5)) {
-                    const tick = document.createElement("span");
-                    tick.innerText = new Intl.NumberFormat('ja-JP').format(i);
+                const tickArrows = document.createElement("div");
+                tickArrows.className = "ticks";
+                const maxValueDigit = Intl.NumberFormat('ja-JP').format(maxValue).length;
+                for (let i = 0; i <= maxValue; i += maxValue / 4) {
+                    const tick = document.createElement("pre");
+                    tick.innerText = new Intl.NumberFormat('ja-JP').format(Math.round(i/roundDigit)*roundDigit).padEnd(maxValueDigit, " ");
                     ticks.appendChild(tick);
+                    const tickArrow = document.createElement("span");
+                    switch(i){
+                      case 0:
+                        tickArrow.innerText = "|　";
+                        break;
+                      case maxValue:
+                        tickArrow.innerText = "　|";
+                        break;
+                      default:
+                        tickArrow.innerText = "|";
+                    }
+                    
+                    tickArrows.appendChild(tickArrow)
                 }
                 
                 container.appendChild(label);
                 container.appendChild(track);
                 container.appendChild(progressBar);
                 container.appendChild(slider);
-                container.appendChild(ticks);
+                ticksContainer.appendChild(tickArrows);
+                ticksContainer.appendChild(ticks);
+                container.appendChild(ticksContainer);
                 slidersContainer.appendChild(container);
             });
         }
 
         const infoData = {
             2600: "得意：2,550\n普通：2,050\n苦手：1,600\nファン数：10,700",
-            25300: "得意：25,300\n普通：20,400\n苦手：16,400\nファン数：256,000",
-            60000: "得意：80,000\n普通：65,000\n苦手：55,000\nファン数：800,000"
+            26000: "得意：25,300\n普通：20,400\n苦手：16,400\nファン数：256,000",
+            80000: "得意：80,000\n普通：65,000\n苦手：55,000\nファン数：800,000"
         };
 
         function updateInfoBox(value) {
