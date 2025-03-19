@@ -91,12 +91,12 @@
         .grid-layout {
             display: grid;
             grid-template-areas: 
-                "blank blank targetValueLabel"
-                "categories vorcal targetValue1"
-                "categories dance targetValue2"
-                "categories visual targetValue3"
-                "fan-info-label fan-info-label fan-info-box";
-            grid-template-columns: auto 1fr auto;
+                "blank blank targetValueLabel increaseValueLabel"
+                "categories vorcal targetValue1 increaseValue1"
+                "categories dance targetValue2 increaseValue2"
+                "categories visual targetValue3 increaseValue3"
+                "blank2 total fanTargetValue increaseFanValue";
+            grid-template-columns: auto minmax(120px, 0px) auto auto;
             gap: 5px;
             align-items: center;
             margin-top: 10px;
@@ -119,6 +119,9 @@
             grid-area: visual;
             color: rgb(200, 200, 50);
         }
+        .total {
+            grid-area: total;
+        }
         .targetValueLabel {
             grid-area: targetValueLabel;
             font-weight: bold;
@@ -137,11 +140,23 @@
             font-weight: bold;
             text-align: center;
         }
-        .fan-info-label {
-            grid-area: fan-info-label;
+        .fanTargetValue {
+            grid-area: fanTargetValue;
         }
-        .fan-info-box {
-            grid-area: fan-info-box;
+        .increaseValueLabel {
+            grid-area: increaseValueLabel;
+        }
+        .increaseValue1 {
+            grid-area: increaseValue1;
+        }
+        .increaseValue2 {
+            grid-area: increaseValue2;
+        }
+        .increaseValue3 {
+            grid-area: increaseValue3;
+        }
+        .increaseFanValue {
+            grid-area: increaseFanValue;
         }
         .sortable-categories {
             grid-area: categories;
@@ -149,7 +164,7 @@
             flex-direction: column;
         }
         .sortable-category {
-            padding: 2px 10px;
+            padding: 2px 5px;
             cursor: move;
             border: 3px solid #ccc;
             border-radius: 5px;
@@ -180,14 +195,19 @@
         <div class="vodavi-label vorcal-label">ボーカル</div>
         <div class="vodavi-label dance-label">ダンス</div>
         <div class="vodavi-label visual-label">ビジュアル</div>
-        
+        <div class="total info-box">合計</div>
+
         <div class="targetValueLabel info-box">目標スコア</div>
         <div id="infoBox1" class="targetValue1 info-box"></div>
         <div id="infoBox2" class="targetValue2 info-box"></div>
         <div id="infoBox3" class="targetValue3 info-box"></div>
-        
-        <div class="fan-info-label info-box">ファン数上昇上限スコア</div>
-        <div class="fan-info-box info-box" id="fanCountBox"></div>
+        <div class="fanTargetValue info-box" id="fanCountBox"></div>
+
+        <div class="increaseValueLabel info-box">上昇量</div>
+        <div id="increaseValue1" class="increaseValue1 info-box"></div>
+        <div id="increaseValue2" class="increaseValue2 info-box"></div>
+        <div id="increaseValue3" class="increaseValue3 info-box"></div>
+        <div id="increaseFanValue" class="increaseFanValue info-box"></div>
     </div>
     <div id="sliders"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
@@ -299,9 +319,36 @@
         }
 
         const infoData = {
-            2600: { "得意": 2550, "普通": 2050, "苦手": 1600, "ファン数": 10700 },
-            26000: { "得意": 25300, "普通": 20400, "苦手": 16400, "ファン数": 256000 },
-            80000: { "得意": 80000, "普通": 65000, "苦手": 55000, "ファン数": 800000 }
+            2600: { 
+                "得意": 2550,
+                "得意最大上昇量":92,
+                "普通": 2050, 
+                "普通最大上昇量":76,
+                "苦手": 1600, 
+                "苦手最大上昇量":62,
+                "ファン数": 10700,
+                "ファン数最大上昇量": 120000
+             },
+            26000: { 
+                "得意": 25300,
+                "得意最大上昇量":119, 
+                "普通": 20400, 
+                "普通最大上昇量":98,
+                "苦手": 16400,
+                "苦手最大上昇量":80,
+                "ファン数": 256000,
+                "ファン数最大上昇量": 15999 
+            },
+            80000: { 
+                "得意": 80000,
+                "得意最大上昇量": 172,
+                "普通": 65000,
+                "普通最大上昇量": 142,
+                "苦手": 55000,
+                "苦手最大上昇量": 116,
+                "ファン数": 800000,
+                "ファン数最大上昇量": 38001
+            }
         };
 
         function updateInfoBox(value) {
@@ -311,6 +358,10 @@
             document.getElementById("infoBox2").innerText = new Intl.NumberFormat('ja-JP').format(info[categories[1]]);
             document.getElementById("infoBox3").innerText = new Intl.NumberFormat('ja-JP').format(info[categories[2]]);
             document.getElementById("fanCountBox").innerText = new Intl.NumberFormat('ja-JP').format(info["ファン数"]);
+            document.getElementById("increaseValue1").innerText = '+' + new Intl.NumberFormat('ja-JP').format(info[`${categories[0]}最大上昇量`]);
+            document.getElementById("increaseValue2").innerText = '+' + new Intl.NumberFormat('ja-JP').format(info[`${categories[1]}最大上昇量`]);
+            document.getElementById("increaseValue3").innerText = '+' + new Intl.NumberFormat('ja-JP').format(info[`${categories[2]}最大上昇量`]);
+            document.getElementById("increaseFanValue").innerText = 'ファン数\n+' + new Intl.NumberFormat('ja-JP').format(info["ファン数最大上昇量"]);
             updateBorderLines(); // ボーダーラインを更新
         }
 
