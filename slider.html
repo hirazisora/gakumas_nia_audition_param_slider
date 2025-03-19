@@ -49,7 +49,7 @@
             border-radius: 10px;
             top: 75%;
             transform: translateY(-50%);
-            z-index: 2;
+            z-index: 3;
         }
         .slider-track {
             position: absolute;
@@ -66,7 +66,7 @@
             width: 100%;
             height: 20px;
             top: 80%;
-            z-index: 3;
+            z-index: 0;
         }
         .ticks {
             display: flex;
@@ -86,23 +86,160 @@
         }
         .slider-container:nth-child(3) .slider-label {
             color: rgb(200, 200, 50);
+        }
+        .sortable-labels {
+            display: flex;
+            flex-direction: column;
+            margin-right: 20px;
+        }
+        .sortable-label {
+            padding: 5px 10px;
+            cursor: move;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .border-line {
+            position: absolute;
+            height: 40px;
+            width: 4px;
+            top:50%;
+            background: red;
+            z-index: 2;
+        }
+        .layout-container {
+            display: flex;
+            align-items: flex-start;
+        }
+        .table-layout {
+            display: table;
+            margin-top: 20px;
+            width: 100%;
+        }
+        .table-row {
+            display: table-row;
+        }
+        .table-cell {
+            display: table-cell;
+            padding: 10px;
+            vertical-align: middle;
+        }
+        .sortable-labels {
+            display: flex;
+            justify-content: space-around;
+        }
+        .sortable-label {
+            padding: 5px 10px;
+            cursor: move;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .grid-layout {
+            display: grid;
+            grid-template-areas: 
+                "blank blank targetValueLabel"
+                "categories vorcal targetValue1"
+                "categories dance targetValue2"
+                "categories visual targetValue3"
+                "fan-info-label fan-info-label fan-info-box";
+            grid-template-columns: auto 1fr auto;
+            gap: 10px;
+            align-items: center;
+            margin-top: 20px;
+            width: fit-content; /* コンテンツの横幅に合わせる */
+            margin-left: 0; /* 左端に配置 */
+        }
+        .vodavi-label{
+            font-weight: bold;
+            text-align: center;
+        }
+        .vorcal-label {
+            grid-area: vorcal;
+            color: rgb(200, 50, 100);
+        }
+        .dance-label {
+            grid-area: dance;
+            color: blue;
+        }
+        .visual-label {
+            grid-area: visual;
+            color: rgb(200, 200, 50);
+        }
+        .targetValueLabel{
+            grid-area: targetValueLabel;
+            font-weight: bold;
+        }
+        .targetValue1 {
+            grid-area: targetValue1;
+        }
+        .targetValue2 {
+            grid-area: targetValue2;
+        }
+        .targetValue3 {
+            grid-area: targetValue3;
+        }
         .info-box {
-            margin-top: 10px;
             font-size: 20px;
             font-weight: bold;
+            text-align: center;
+        }
+        .fan-info-label{
+            grid-area: fan-info-label;
+        }
+        .fan-info-box{
+            grid-area: fan-info-box;
+        }
+        .sortable-categories {
+            grid-area: categories;
+            display: flex;
+            flex-direction: column;
+        }
+        .sortable-category {
+            padding: 5px 10px;
+            cursor: move;
+            border: 3px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            margin-top: 5px;
+            text-align: center;
+        }
+        .sortable-category-good {
+            font-weight: bold;
+        }
+        .sortable-category-bad {
+            color: gray;
         }
     </style>
 </head>
 <body>
-    <label>目標値: 
+    <label>オーディション: 
         <select id="maxValue" style="font-size: 24px;">
-            <option value="2600">一次</option>
-            <option value="26000">二次</option>
-            <option value="80000">最終</option>
+            <option value="2600">一次（メロBang!）</option>
+            <option value="26000">二次（GAL★AXYミュージック）</option>
+            <option value="80000">最終（FINALE）</option>
         </select>
     </label>
-    <div id="infoBox" class="info-box"></div>
+    <div class="grid-layout">
+        <div class="sortable-categories" id="sortableCategories">
+            <div class="sortable-category sortable-category-good">得意</div>
+            <div class="sortable-category sortable-category-normal">普通</div>
+            <div class="sortable-category sortable-category-bad">苦手</div>
+        </div>
+
+        <div class="vodavi-label vorcal-label">ボーカル</div>
+        <div class="vodavi-label dance-label">ダンス</div>
+        <div class="vodavi-label visual-label">ビジュアル</div>
+        
+        <div class="targetValueLabel info-box">目標スコア</div>
+        <div id="infoBox1" class="targetValue1 info-box"></div>
+        <div id="infoBox2" class="targetValue2 info-box"></div>
+        <div id="infoBox3" class="targetValue3 info-box"></div>
+        
+        <div class="fan-info-label info-box">ファン数上昇上限スコア</div>
+        <div class="fan-info-box info-box" id="fanCountBox"></div>
+    </div>
     <div id="sliders"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <script>
         const data = [
             { name: "ボーカル", value: 0, color: "rgb(200, 50, 100)" },
@@ -115,7 +252,7 @@
             const slidersContainer = document.getElementById("sliders");
             slidersContainer.innerHTML = "";
 
-            data.forEach((item, index) => {
+            data.forEach((item) => {
                 const container = document.createElement("div");
                 container.className = "slider-container";
                 
@@ -130,6 +267,10 @@
                 progressBar.className = "progress-bar";
                 progressBar.style.background = item.color;
                 progressBar.style.width = 0;
+                
+                const borderLine = document.createElement("div");
+                borderLine.className = "border-line";
+                borderLine.dataset.name = item.name; // ボーダーラインに名前を紐付け
                 
                 let roundDigit;
                 switch(maxValue){
@@ -186,23 +327,40 @@
                 container.appendChild(label);
                 container.appendChild(track);
                 container.appendChild(progressBar);
+                container.appendChild(borderLine);
                 container.appendChild(slider);
                 ticksContainer.appendChild(tickArrows);
                 ticksContainer.appendChild(ticks);
                 container.appendChild(ticksContainer);
                 slidersContainer.appendChild(container);
             });
+            updateBorderLines();
+        }
+
+        function updateBorderLines() {
+            const borderLines = document.querySelectorAll(".border-line");
+            const categories = Array.from(document.querySelectorAll(".sortable-category")).map((category) => category.innerText);
+            borderLines.forEach((line, i) => {
+                const targetValue = infoData[maxValue][categories[i]];
+                line.style.left = `${(Number(targetValue) / maxValue) * 100}%`;
+            });
         }
 
         const infoData = {
-            2600: "得意：2,550\n普通：2,050\n苦手：1,600\nファン数：10,700",
-            26000: "得意：25,300\n普通：20,400\n苦手：16,400\nファン数：256,000",
-            80000: "得意：80,000\n普通：65,000\n苦手：55,000\nファン数：800,000"
+            2600: { "得意": 2550, "普通": 2050, "苦手": 1600, "ファン数": 10700 },
+            26000: { "得意": 25300, "普通": 20400, "苦手": 16400, "ファン数": 256000 },
+            80000: { "得意": 80000, "普通": 65000, "苦手": 55000, "ファン数": 800000 }
         };
 
         function updateInfoBox(value) {
-            document.getElementById("infoBox").innerText = infoData[value];
-        };
+            const info = infoData[value];
+            const categories = Array.from(document.querySelectorAll(".sortable-category")).map((category) => category.innerText);
+            document.getElementById("infoBox1").innerText = new Intl.NumberFormat('ja-JP').format(info[categories[0]]);
+            document.getElementById("infoBox2").innerText = new Intl.NumberFormat('ja-JP').format(info[categories[1]]);
+            document.getElementById("infoBox3").innerText = new Intl.NumberFormat('ja-JP').format(info[categories[2]]);
+            document.getElementById("fanCountBox").innerText = new Intl.NumberFormat('ja-JP').format(info["ファン数"]);
+            updateBorderLines(); // ボーダーラインを更新
+        }
 
         document.getElementById("maxValue").onchange = (e) => {
             maxValue = Number(e.target.value);
@@ -212,6 +370,15 @@
 
         updateInfoBox(2600);
         renderSliders();
+
+        // ドラッグで並び替え可能にする
+        new Sortable(document.getElementById("sortableCategories"), {
+            animation: 150,
+            onEnd: function () {
+                updateInfoBox(document.getElementById("maxValue").value);
+                updateBorderLines(); // 並び替え後にボーダーラインを更新
+            }
+        });
     </script>
 </body>
 </html>
