@@ -14,9 +14,13 @@
             position: relative;
         }
         .slider-label {
-            display: block;
+            display: inline;
             font-weight: bold;
             margin-bottom: 10px;
+        }
+        .targetValueLabel {
+            display: inline;
+            font-weight: bold;
         }
         .slider {
             width: 100%;
@@ -222,8 +226,9 @@
         function renderSliders() {
             const slidersContainer = document.getElementById("sliders");
             slidersContainer.innerHTML = "";
-
-            data.forEach((item) => {
+            const targetValue = infoData[maxValue];
+            const categories = Array.from(document.querySelectorAll(".sortable-category")).map((category) => category.innerText);
+            data.forEach((item, i) => {
                 const container = document.createElement("div");
                 container.className = "slider-container";
                 
@@ -231,6 +236,11 @@
                 label.className = "slider-label";
                 label.innerText = `${item.name}: 0`;
                 label.style.color = item.color;
+
+                const targetValueLavel = document.createElement("span");
+                targetValueLavel.className = "targetValueLabel";
+                targetValueLavel.id = `targetValueLabel${i+1}`;
+                targetValueLavel.innerText = ` \/${targetValue[categories[i]]}`;
                 
                 const track = document.createElement("div");
                 track.className = "slider-track";
@@ -297,6 +307,7 @@
                 }
                 
                 container.appendChild(label);
+                container.appendChild(targetValueLavel);
                 container.appendChild(track);
                 container.appendChild(progressBar);
                 container.appendChild(borderLine);
@@ -362,6 +373,9 @@
             document.getElementById("increaseValue2").innerText = '+' + new Intl.NumberFormat('ja-JP').format(info[`${categories[1]}最大上昇量`]);
             document.getElementById("increaseValue3").innerText = '+' + new Intl.NumberFormat('ja-JP').format(info[`${categories[2]}最大上昇量`]);
             document.getElementById("increaseFanValue").innerText = 'ファン数\n+' + new Intl.NumberFormat('ja-JP').format(info["ファン数最大上昇量"]);
+            document.getElementById("targetValueLabel1").innerText = ` \/${info[categories[0]]}`;
+            document.getElementById("targetValueLabel2").innerText = ` \/${info[categories[1]]}`;
+            document.getElementById("targetValueLabel3").innerText = ` \/${info[categories[2]]}`;
             updateBorderLines(); // ボーダーラインを更新
         }
 
@@ -371,9 +385,8 @@
             renderSliders();
         };
 
-        updateInfoBox(2600);
         renderSliders();
-
+        updateInfoBox(2600);
         // ドラッグで並び替え可能にする
         new Sortable(document.getElementById("sortableCategories"), {
             animation: 150,
